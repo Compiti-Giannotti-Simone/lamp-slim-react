@@ -12,4 +12,53 @@ class AlunniController
     $response->getBody()->write(json_encode($results));
     return $response->withHeader("Content-type", "application/json")->withStatus(200);
   }
+
+  public function show(Request $request, Response $response, $args){
+    $mysqli_connection = new MySQLi('my_mariadb', 'root', 'ciccio', 'scuola');
+    $stmt = $mysqli_connection->prepare("SELECT * FROM alunni WHERE id = ?");
+    $id = $args['id'];
+    $stmt->bind_param("i",$id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $results = $result->fetch_all(MYSQLI_ASSOC);
+
+    $response->getBody()->write(json_encode($results));
+    return $response->withHeader("Content-type", "application/json")->withStatus(200);
+  }
+
+  public function create(Request $request, Response $response, $args){
+    $mysqli_connection = new MySQLi('my_mariadb', 'root', 'ciccio', 'scuola');
+    $name = $request->getParsedBody()['nome'];
+    $surname = $request->getParsedBody()['cognome'];
+    $stmt = $mysqli_connection->prepare("INSERT INTO alunni(nome,cognome) VALUES (?, ?)");
+    $stmt->bind_param("ss",$name, $surname);
+    $stmt->execute();
+
+    $response->getBody()->write(json_encode("ok"));
+    return $response->withHeader("Content-type", "application/json")->withStatus(200);
+  }
+
+  public function update(Request $request, Response $response, $args){
+    $mysqli_connection = new MySQLi('my_mariadb', 'root', 'ciccio', 'scuola');
+    $id = $args['id'];
+    $name = $request->getParsedBody()['nome'];
+    $surname = $request->getParsedBody()['cognome'];
+    $stmt = $mysqli_connection->prepare("UPDATE alunni SET name = ?, surname = ? WHERE id = ?");
+    $stmt->bind_param("ssi",$name, $surname, $id);
+    $stmt->execute();
+    
+    $response->getBody()->write(json_encode("ok"));
+    return $response->withHeader("Content-type", "application/json")->withStatus(200);
+  }
+
+  public function delete(Request $request, Response $response, $args){
+    $mysqli_connection = new MySQLi('my_mariadb', 'root', 'ciccio', 'scuola');
+    $id = $args['id'];
+    $stmt = $mysqli_connection->prepare("DELETE FROM alunni WHERE id = ?");
+    $stmt->bind_param("i",$id);
+    $stmt->execute();
+    
+    $response->getBody()->write(json_encode("ok"));
+    return $response->withHeader("Content-type", "application/json")->withStatus(200);
+  }
 }
